@@ -4,17 +4,17 @@ use crate::{
 use super::window::WindowContext;
 use cgmath::{MetricSpace, Vector2, Zero};
 use glfw::{Action, Context, Key};
-use rand::Rng;
+use rand::{Rng, prelude::IndexedRandom};
 
 pub const STAY_STILL_AFTER_HELD: f64 = 1.0;
-pub const WANDER_TIMER: f64 = 4.0;
+pub const WANDER_TIMER: f64 = 0.2;
 pub const CHATTER_TIMER: f64 = 3.0;
-pub const FOLLOW_DIR: i32 = 120;
+pub const FOLLOW_DIST: f64 = 120.;
 
 enum Behavior {
     Wander,
     Follow,
-    Stay
+    // Stay
 }
 
 pub struct BuddyContext {
@@ -85,6 +85,9 @@ impl BuddyContext {
         
             self.window.handle.set_pos(random_pos.0 as i32, random_pos.1 as i32);
             self.static_pos = Vector2::new(random_pos.0, random_pos.1);
+            self.easing_to = Vector2::new(random_pos.0, random_pos.1);
+            self.easing_from = Vector2::new(random_pos.0, random_pos.1);
+            // self.goto(Vector2::new(random_pos.0, random_pos.1), 0.0, true);
         });        
     }
 
@@ -127,6 +130,21 @@ impl BuddyContext {
         todo!()
     }
 
+    pub fn say_random_sequence(&mut self, text_options: Vec<Vec<&'static str>>) {
+        if !text_options.is_empty() {
+            let mut rng = rand::rng();
+            if let Some(selected_sequence) = text_options.choose(&mut rng) {
+                self.chatter_array = selected_sequence.to_vec();
+                self.chatter_timer = 0.0;
+                self.chatter_index = 0;
+            }
+        }
+    }
+
+    pub fn say(&mut self, text: &'static str) {
+        println!("{}", text);
+    }
+
     fn is_moving(&self) -> bool {
         self.easing_dur != 0. && self.easing_t <= self.easing_dur
     }
@@ -144,7 +162,8 @@ impl BuddyContext {
     }
 
     fn goto(&mut self, pos: Vector2<f64>, dur: f64, set_as_static: bool) {
-        self.easing_from = Vector2::new(self.static_pos.x , self.static_pos.y);
+        let window_pos = self.window.handle.get_pos();
+        self.easing_from = Vector2::new(window_pos.0 as f64, window_pos.1 as f64);
         self.easing_to = pos;
         self.easing_dur = dur;
         self.easing_t = 0.0;
@@ -156,7 +175,7 @@ impl BuddyContext {
 
     fn update_wander(&mut self, dt: f64) {
         if self.is_moving() {
-            self.easing_t -= dt;
+            self.easing_t += dt;
             let val = Ease::in_out_sine(self.easing_t / self.easing_dur);
             let pos = self.easing_from * (1.0 - val) + self.easing_to * val;
             self.window.handle.set_pos(pos.x as i32, pos.y as i32); 
@@ -165,6 +184,7 @@ impl BuddyContext {
             match self.get_behavior() {
                 Behavior::Wander => {
                     self.wander_timer -= dt;
+                    println!("{}", self.wander_timer);
                     if self.wander_timer <= 0. {
                         let mut rng = rand::rng();
                         let rand = Vector2::new(
@@ -179,23 +199,21 @@ impl BuddyContext {
                         let cursor_pos = self.window.handle.get_cursor_pos();
                         let window_pos = self.window.handle.get_pos();
 
-                        let x_dist = cursor_pos.0 - window_pos.0 as f64;
-                        let y_dist = cursor_pos.1 - window_pos.1 as f64;
+                        let x_dist = cursor_pos.0;
+                        let y_dist = cursor_pos.1;
 
                         let mut x_target = window_pos.0 as f64;
                         let mut y_target = window_pos.1 as f64;
 
-                        if x_dist.abs() > FOLLOW_DIR as f64 {
-                            x_target += x_dist - FOLLOW_DIR as f64 * x_dist.signum();
+                        if x_dist.abs() > FOLLOW_DIST {
+                            x_target = (window_pos.0 as f64 + x_dist) - (FOLLOW_DIST * x_dist.signum())
                         }
-                        if y_dist.abs() > FOLLOW_DIR as f64 {
-                            y_target += y_dist - FOLLOW_DIR as f64 * y_dist.signum();
+                        if y_dist.abs() > FOLLOW_DIST {
+                            y_target = (window_pos.1 as f64 + y_dist) - (FOLLOW_DIST * y_dist.signum())
                         }
-
-                        self.goto(Vector2::new(x_target, y_target), 1.0, true);
+                        self.goto(Vector2::new(x_target, y_target), 0.5, true);
                     }
                 }
-                _ => {}
             }
         }
     }
@@ -215,9 +233,9 @@ impl BuddyContext {
                     let stable_pos_dist = self.static_pos.distance(self.started_holding_at);
                     if !self.is_speaking() {
                         if stable_pos_dist > 50. {
-                            
+                            self.say_random_sequence(self.buddy.dialog(crate::buddies::DialogType::Moved));
                         } else {
-                            
+                            self.say_random_sequence(self.buddy.dialog(crate::buddies::DialogType::Touched));
                         }
                     }
                 }
@@ -230,7 +248,11 @@ impl BuddyContext {
         self.chatter_timer -= dt;
         if self.chatter_timer <= 0. {
             self.chatter_timer = self.chatter_timer - dt;
-            // if chatter_array[chatter_index] exists {}
+            if let Some(text) = self.chatter_array.get(self.chatter_index) {
+                if !text.is_empty() {
+                    self.say(text);
+                }
+            }
             self.chatter_index += 1;
         }
 
