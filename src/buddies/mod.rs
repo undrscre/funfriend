@@ -1,4 +1,3 @@
-pub mod context;
 pub mod funfriend;
 
 use crate::config::Friends;
