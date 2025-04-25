@@ -1,5 +1,5 @@
-pub mod funfriend;
 pub mod context;
+pub mod funfriend;
 
 use crate::config::Friends;
 use funfriend::FunfriendBuddy;
@@ -7,18 +7,22 @@ use funfriend::FunfriendBuddy;
 pub enum DialogType {
     Chatter,
     Moved,
-    Touched
+    Touched,
 }
 
-pub trait Buddy<'a>: Sized {
-    fn name() -> &'a str;
-    fn dialog(dialog_type: DialogType) -> Vec<Vec<&'a str>>;
-    fn textures(); //todo 
-    fn talk_sound(); //todo
-    fn font(); //todo
+pub trait Buddy {
+    fn name(&self) -> &'static str;
+    fn dialog(&self, dialog_type: DialogType) -> Vec<Vec<&'static str>>;
+    fn textures(&self); //todo 
+    fn talk_sound(&self); //todo
+    fn font(&self); //todo
 }
 
 // @TODO make this work
-pub fn retrieve_buddy(_buddy_type: Friends) -> Option<FunfriendBuddy> {
-    Some(FunfriendBuddy {})
+pub fn retrieve_buddy(buddy_type: &Friends) -> Box<dyn Buddy> {
+    match buddy_type {
+        Friends::FUNFRIEND => {
+            Box::new(FunfriendBuddy {})
+        }
+    }
 }
