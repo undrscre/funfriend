@@ -6,11 +6,4 @@ edition = "2024"
 [dependencies]
 gl = "0.14.0"
 glfw = "0.59.0"
-
-[lib]
-name = "friends"
-path = "src/lib.rs"
-
-[[bin]]
-name = "desktop"
-path = "bin/main.rs"
+serde = {version = "1.0.219", features = ["derive"]}

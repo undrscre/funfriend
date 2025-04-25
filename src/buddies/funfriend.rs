@@ -1,4 +1,4 @@
-use crate::buddy::{Buddy, DialogType};
+use crate::buddies::{Buddy, DialogType};
 pub struct FunfriendBuddy {}
 
 impl<'a> Buddy<'a> for FunfriendBuddy {
