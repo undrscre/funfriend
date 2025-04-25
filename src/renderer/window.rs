@@ -17,7 +17,7 @@ impl Window {
 		glfw.window_hint(glfw::WindowHint::Focused(false));
 		glfw.window_hint(glfw::WindowHint::FocusOnShow(false));
 		glfw.window_hint(glfw::WindowHint::Floating(true));
-		glfw.window_hint(glfw::WindowHint::TransparentFramebuffer(true));
+		// glfw.window_hint(glfw::WindowHint::TransparentFramebuffer(true));
 		glfw.window_hint(glfw::WindowHint::AlphaBits(Some(8)));
 
 		let (mut window, events) = glfw

@@ -12,15 +12,15 @@ pub enum Friends {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ConfigType {
-    friend_size: i64,
-    volume: f32,
-    friend_type: Friends
+    pub friend_size: u32,
+    pub volume: f32,
+    pub friend_type: Friends
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
-    config: ConfigType,
-    path: PathBuf,
+    pub config: ConfigType,
+    pub path: PathBuf,
 }
 
 impl Default for ConfigType {
