@@ -77,7 +77,7 @@ impl BuddyRenderer {
         Ok((vao, vbo, ebo))
     }
 
-    pub fn render(&mut self, dt: f64, config: ConfigType, window_size: i32, time: f32) {
+    pub fn render(&mut self, dt: f64, config: ConfigType, window_size: i32, time: f64) {
         self.textures.update(dt);
         let current_frame = self.textures.texture();
 
@@ -97,7 +97,7 @@ impl BuddyRenderer {
                 let (fs_w, fs_h) = (config.friend_size,config.friend_size);
                 Self::set_uniform_vec2(self.shader.program, "funfriendSize", fs_w as f32, fs_h as f32);
                 Self::set_uniform_vec2(self.shader.program, "resolution", window_size as f32, window_size as f32);
-                Self::set_uniform_float(self.shader.program, "time", time);
+                Self::set_uniform_float(self.shader.program, "time", time as f32);
 
                 gl::BindVertexArray(self.vao);
                 gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, ptr::null());

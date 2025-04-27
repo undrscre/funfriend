@@ -5,6 +5,8 @@ use cgmath::{MetricSpace, Vector2, Zero};
 use glfw::{Action, Context, Key};
 use rand::{Rng, prelude::IndexedRandom};
 
+use super::chatter::ChatterContext;
+
 pub const STAY_STILL_AFTER_HELD: f64 = 1.0;
 pub const WANDER_TIMER: f64 = 4.;
 pub const CHATTER_TIMER: f64 = 3.0;
@@ -17,7 +19,7 @@ enum Behavior {
 }
 
 pub struct BuddyContext {
-    pub buddy: Box<dyn Buddy>, //@TODO impl this as just Box<Dyn Buddy>
+    pub buddy: Box<dyn Buddy>,
     pub renderer: BuddyRenderer,
     pub config: ConfigType,
     pub window: WindowContext,
@@ -25,6 +27,7 @@ pub struct BuddyContext {
     pub chatter_timer: f64,
     pub chatter_index: usize,
     pub chatter_array: Vec<&'static str>,
+    pub chatter_contexts: Vec<ChatterContext>,
 
     pub held: bool,
     pub held_at: Vector2<f64>,
@@ -51,6 +54,7 @@ impl BuddyContext {
             chatter_timer: 1.0,
             chatter_index: 0,
             chatter_array: vec![""],
+            chatter_contexts: Vec::new(),
             held: false,
             held_at: Vector2::zero(),
             started_holding_at: Vector2::zero(),
@@ -73,7 +77,7 @@ impl BuddyContext {
         self.window.handle.make_current();
 
         let mut rng = rand::rng();
-        self.window.glfw.with_primary_monitor(|_, monitor| {
+        self.window.glfw.lock().unwrap().with_primary_monitor(|_, monitor| {
             let monitor_pos = monitor.as_ref().unwrap().get_pos();
             let mode = monitor.as_ref().unwrap().get_video_mode().unwrap();
         
@@ -90,7 +94,7 @@ impl BuddyContext {
         });        
     }
 
-    pub fn update(&mut self, dt: f64) {
+    pub fn update(&mut self, dt: f64, time: f64) {
         self.chatter_timer -= dt;
         if self.chatter_timer <= 0. {
             self.chatter_timer = self.chatter_timer - dt;
@@ -103,14 +107,14 @@ impl BuddyContext {
         }
 
         self.update_pos(dt);
-        self.render(dt);
+        self.render(dt, time);
         self.window.handle.swap_buffers();
     }
-    
-    fn render(&mut self, dt: f64) {
+
+    fn render(&mut self, dt: f64, time: f64) {
         let size = (self.config.friend_size as f64 * 1.3).floor() as i32;
         self.window.handle.make_current();
-        self.renderer.render(dt, self.config, size, self.window.glfw.get_time() as f32);
+        self.renderer.render(dt, self.config, size, time);
     }
     
     pub fn handle_event(&mut self, event: glfw::WindowEvent) {

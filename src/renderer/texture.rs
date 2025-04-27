@@ -60,7 +60,6 @@ pub fn load_texture(
         gl::BindTexture(gl::TEXTURE_2D, 0);
     } 
 
-    println!("loaded texture");
     SizedTexture {
         tex: texture_id,
         width,
