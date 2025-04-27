@@ -4,19 +4,28 @@ pub mod renderer;
 pub mod contexts;
 
 use crate::config::Config;
-use renderer::buddy::BuddyRenderer;
 use crate::contexts::{buddy::BuddyContext, window::WindowContext};
+use crate::renderer::buddy::BuddyRenderer;
+
+fn read_file(file: &str) -> String {
+    std::fs::read_to_string(file).unwrap()
+}
 
 fn main() {
-    //@TODO: impl desktop pet
     println!("hello meow");
-    let config = Config::init().expect("couldn't initialize configuration").config;
+    let config = Config::init()
+        .expect("config fail")
+        .config;
+
+    let vert = read_file("src/shaders/default.vert");
+    let frag = read_file("src/shaders/funfriend.frag");
+
     let buddy = buddies::retrieve_buddy(&config.friend_type);
-    let window = WindowContext::new(config.friend_size, config.friend_size, "Hello bro", false);
-    let mut context = BuddyContext::new(buddy, BuddyRenderer {}, config, window);
+    let window = WindowContext::new(config.friend_size, config.friend_size, "hello bro", true);
+    let renderer = BuddyRenderer::new(buddy.textures(), vert.as_str(), frag.as_str())
+        .expect("renderer init fail");
 
-    context.init();
-
+    let mut context = BuddyContext::new(buddy, renderer, config, window);
     let mut last_t = context.window.glfw.get_time();
     while !context.window.handle.should_close() {
         let dt = context.window.glfw.get_time() - last_t;

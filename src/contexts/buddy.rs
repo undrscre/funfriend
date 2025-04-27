@@ -1,13 +1,12 @@
 use crate::{
-    buddies::Buddy, config::ConfigType, renderer::buddy::BuddyRenderer, renderer::ease::Ease
+    WindowContext, buddies::{Buddy, DialogType}, config::ConfigType, renderer::{buddy::BuddyRenderer, ease::Ease},
 };
-use super::window::WindowContext;
 use cgmath::{MetricSpace, Vector2, Zero};
 use glfw::{Action, Context, Key};
 use rand::{Rng, prelude::IndexedRandom};
 
 pub const STAY_STILL_AFTER_HELD: f64 = 1.0;
-pub const WANDER_TIMER: f64 = 0.2;
+pub const WANDER_TIMER: f64 = 4.;
 pub const CHATTER_TIMER: f64 = 3.0;
 pub const FOLLOW_DIST: f64 = 120.;
 
@@ -91,6 +90,29 @@ impl BuddyContext {
         });        
     }
 
+    pub fn update(&mut self, dt: f64) {
+        self.chatter_timer -= dt;
+        if self.chatter_timer <= 0. {
+            self.chatter_timer = self.chatter_timer - dt;
+            if let Some(text) = self.chatter_array.get(self.chatter_index) {
+                if !text.is_empty() {
+                    self.say(text);
+                }
+            }
+            self.chatter_index += 1;
+        }
+
+        self.update_pos(dt);
+        self.render(dt);
+        self.window.handle.swap_buffers();
+    }
+    
+    fn render(&mut self, dt: f64) {
+        let size = (self.config.friend_size as f64 * 1.3).floor() as i32;
+        self.window.handle.make_current();
+        self.renderer.render(dt, self.config, size, self.window.glfw.get_time() as f32);
+    }
+    
     pub fn handle_event(&mut self, event: glfw::WindowEvent) {
         match event {
             glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) => {
@@ -125,11 +147,7 @@ impl BuddyContext {
             _ => {}
         }
     }
-
-    pub fn render() {
-        todo!()
-    }
-
+    
     pub fn say_random_sequence(&mut self, text_options: Vec<Vec<&'static str>>) {
         if !text_options.is_empty() {
             let mut rng = rand::rng();
@@ -184,7 +202,6 @@ impl BuddyContext {
             match self.get_behavior() {
                 Behavior::Wander => {
                     self.wander_timer -= dt;
-                    println!("{}", self.wander_timer);
                     if self.wander_timer <= 0. {
                         let mut rng = rand::rng();
                         let rand = Vector2::new(
@@ -233,9 +250,9 @@ impl BuddyContext {
                     let stable_pos_dist = self.static_pos.distance(self.started_holding_at);
                     if !self.is_speaking() {
                         if stable_pos_dist > 50. {
-                            self.say_random_sequence(self.buddy.dialog(crate::buddies::DialogType::Moved));
+                            self.say_random_sequence(self.buddy.dialog(DialogType::Moved));
                         } else {
-                            self.say_random_sequence(self.buddy.dialog(crate::buddies::DialogType::Touched));
+                            self.say_random_sequence(self.buddy.dialog(DialogType::Touched));
                         }
                     }
                 }
@@ -243,19 +260,5 @@ impl BuddyContext {
                 self.waiting_for_stable_pos = true;
             }
         }
-    }
-    pub fn update(&mut self, dt: f64) {
-        self.chatter_timer -= dt;
-        if self.chatter_timer <= 0. {
-            self.chatter_timer = self.chatter_timer - dt;
-            if let Some(text) = self.chatter_array.get(self.chatter_index) {
-                if !text.is_empty() {
-                    self.say(text);
-                }
-            }
-            self.chatter_index += 1;
-        }
-
-        self.update_pos(dt)
     }
 }

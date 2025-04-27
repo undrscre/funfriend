@@ -8,12 +8,12 @@ use std::{
 const APP_NAME: &str = "FUNFRIEND";
 const CONFIG_FILE_NAME: &str = "cfg.json";
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum Friends {
     FUNFRIEND,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct ConfigType {
     pub friend_size: u32,
     pub volume: f32,

@@ -1,4 +1,4 @@
-use crate::buddies::{Buddy, DialogType};
+use crate::{buddies::{Buddy, DialogType}, renderer::{self, texture::TextureBasket}};
 pub struct FunfriendBuddy {}
 
 impl Buddy for FunfriendBuddy {
@@ -35,13 +35,14 @@ impl Buddy for FunfriendBuddy {
         }
     }
 
-    fn textures(&self) {
-        todo!()
+    fn textures(&self) -> TextureBasket {
+        TextureBasket::new(
+            (0..09).map(|i| renderer::texture::load_texture(&format!("assets/buddies/funfriend_{:02}.png", i))).collect(),
+            10.,
+        )
     }
 
-    fn talk_sound(&self) {
-        
-    }
+    fn talk_sound(&self) {}
 
     fn font(&self) {
         todo!()
