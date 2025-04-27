@@ -26,12 +26,10 @@ impl WindowContext {
             .create_window(width, height, title, glfw::WindowMode::Windowed)
             .expect("failed to create GLFW window");
 
-        window.set_framebuffer_size_polling(true);
-        window.set_key_polling(true);
-        window.set_cursor_enter_polling(true);
-        window.set_cursor_pos_polling(true);
-        window.set_mouse_button_polling(true);
-
+        window.set_all_polling(true);
+        gl::load_with(|s| window.get_proc_address(s) as *const _);
+        glfw.set_swap_interval(glfw::SwapInterval::None);
+        
         Self {
             glfw,
             handle: window,

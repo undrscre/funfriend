@@ -205,8 +205,8 @@ impl BuddyContext {
                     if self.wander_timer <= 0. {
                         let mut rng = rand::rng();
                         let rand = Vector2::new(
-                            rng.random_range(0.0..40.0),
-                            rng.random_range(0.0..40.0),
+                            rng.random_range(-150.0..150.0),
+                            rng.random_range(-150.0..150.0),
                         );
                         self.goto(self.static_pos + rand, 4.0, false);
                     }

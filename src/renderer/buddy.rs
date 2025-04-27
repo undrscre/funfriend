@@ -196,7 +196,8 @@ impl Shader {
     }
 
     pub fn compile_shader(source: &str, shader_type: GLenum) -> GLuint {
-        // it's very balls to the wall here i don't have any form of logging
+        // it's very balls to the wall here i don't have any form of logging here
+        // future ivy note -- no it's right there buddy
         let shader = unsafe { gl::CreateShader(shader_type) };
         let c_str = CString::new(source).expect("failed to convert");
 

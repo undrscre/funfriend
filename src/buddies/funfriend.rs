@@ -37,7 +37,7 @@ impl Buddy for FunfriendBuddy {
 
     fn textures(&self) -> TextureBasket {
         TextureBasket::new(
-            (0..09).map(|i| renderer::texture::load_texture(&format!("assets/buddies/funfriend_{:02}.png", i))).collect(),
+            (0..39).map(|i| renderer::texture::load_texture(&format!("assets/buddies/catfriend_{:02}.png", i))).collect(),
             10.,
         )
     }
